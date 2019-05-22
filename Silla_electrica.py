@@ -20,6 +20,13 @@ WINDOWHEIGHT=480
 
 # VARIABLES DE PUERTO SERIE ----------------------------------------------------------------------------------------
 
+x_correction_movement = 20
+y_correction_movement = 15
+
+delta_y_max = 90
+delta_x_max = 150
+
+is_straight_button_pressed = False
 
 ser = serial.Serial('/dev/serial0',baudrate=115200,timeout = 9,bytesize = serial.EIGHTBITS,parity = serial.PARITY_NONE,stopbits = serial.STOPBITS_ONE,rtscts=False)
 
@@ -28,13 +35,15 @@ timer_event_started = False
 timeout = True
 timer_buttons_delay = 1.3
 
-timer_delay_correct_direction = 3
+timer_delay_correct_direction = 1.2
 timer_correct_dir_event_started = False
 timeout_correct_dir = False
 center_of_correction  = 128
 correction_range = 72
 xcoord_max_correction = center_of_correction + correction_range
 xcoord_min_correction = center_of_correction - correction_range
+
+dont_move = False
 
 uart_counter = 0;
 send_bytes = []
@@ -49,14 +58,15 @@ first_correction = True
 
 speed_indicator_names=['speeed_1.png','speeed_2.png','speeed_3.png','speeed_4.png','speeed_5.png']
 speed_indicator_value=0
-
+initspeed=3
 
 Start_Moving_Button = '<ButtonPress-1>'
 Start_Moving_Motion ='<B1-Motion>'
 Start_Moving_Release = '<ButtonRelease-1>'
 Keep_Moving_Button = '<ButtonPress-3>'
 Stop_Moving_Button = '<Double-Button-3>'
-
+Stop_Moving_Button_emergency = '<ButtonPress-3>'
+without_click_motion = '<Motion>'
 
 sig_x_0_por   = 80 
 sig_x_25_por  = 102
@@ -169,7 +179,7 @@ class Audiometro:
         #self.main_frame.config(image=self.photo_fondo)
         self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
         self.main_frame.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
-        self.main_frame.bind('<Triple-Button-3>', self.on_B2_pressed_emergency)
+        self.main_frame.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
         self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
         self.main_frame.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
@@ -199,6 +209,7 @@ class Audiometro:
         self.photo_quit=PhotoImage(file = 'photos_silla/salir_red.png') 
         self.label_quit_button.config(compound = 'center', image=self.photo_quit)
         self.label_quit_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_quit_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.label_quit_button.bind(Start_Moving_Button, lambda e: self.on_quit(master))
 
         self.label_led_button=ttk.Label(self.main_frame)  # label edad value
@@ -207,6 +218,7 @@ class Audiometro:
         self.photo_led=PhotoImage(file = 'photos_silla/led_off.png') 
         self.label_led_button.config(compound = 'center', image=self.photo_led)
         self.label_led_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_led_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.label_led_button.bind(Start_Moving_Button, self.on_led_button)
         self.label_led_button.bind('<ButtonRelease-1>', self.on_led_release)
 
@@ -216,7 +228,8 @@ class Audiometro:
         self.label_off_button.config(foreground = 'white',background = 'white')
         self.photo_off=PhotoImage(file = 'photos_silla/speeed.png') 
         self.label_off_button.config(compound = 'center', image=self.photo_off)
-        self.label_off_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)     
+        self.label_off_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_off_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency) 
         self.label_off_button.bind(Start_Moving_Button, self.on_on_button)
 
         self.label_claxon_button=ttk.Label(self.main_frame)  # label edad value
@@ -225,7 +238,8 @@ class Audiometro:
         self.photo_claxon=PhotoImage(file = 'photos_silla/claxon.png')  #my_icons/off.png
         self.label_claxon_button.config(compound = 'center', image=self.photo_claxon)
         self.label_claxon_button.bind(Start_Moving_Button, self.on_claxon_button)
-        self.label_claxon_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)         
+        self.label_claxon_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_claxon_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.label_claxon_button.bind('<ButtonRelease-1>', self.on_claxon_release)
 
 
@@ -233,7 +247,8 @@ class Audiometro:
         self.label_logo.place(relx=0.01,rely=0.01)
         self.label_logo.config(foreground = 'white',background = 'white')
         self.photo_logo=PhotoImage(file = 'photos_silla/logo.png')  #my_icons/off.png
-        self.label_logo.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)  
+        self.label_logo.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_logo.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)  
         self.label_logo.config(compound = 'center', image=self.photo_logo)
 
         self.label_higher_button=ttk.Label(self.main_frame)  # label edad value
@@ -243,6 +258,7 @@ class Audiometro:
         self.label_higher_button.config(compound = 'center', image=self.photo_aumentar)
         self.label_higher_button.bind(Start_Moving_Button, self.on_higher)
         self.label_higher_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_higher_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.label_higher_button.bind('<ButtonRelease-1>', self.on_higher_release)
 
         self.label_lower_button=ttk.Label(self.main_frame)  # label edad value
@@ -252,6 +268,7 @@ class Audiometro:
         self.label_lower_button.config(compound = 'center', image=self.photo_disminuir)
         self.label_lower_button.bind(Start_Moving_Button, self.on_lower)
         self.label_lower_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_lower_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.label_lower_button.bind(Start_Moving_Release, self.on_lower_release)
 
         self.label_dial=Canvas(self.main_frame)  # label edad value
@@ -265,6 +282,7 @@ class Audiometro:
         self.label_dial.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
         self.label_dial.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
         self.label_dial.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_dial.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.label_dial.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
 
         self.label_indicator=ttk.Label(self.main_frame)  # label edad value
@@ -276,6 +294,7 @@ class Audiometro:
         self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
         self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
         self.label_indicator.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_indicator.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.label_indicator.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
 
         
@@ -291,6 +310,7 @@ class Audiometro:
         self.label_chage_controls_button.config(background = 'white', image = self.photo_chage_controls)
         ##self.label_chage_controls_button.bind(Keep_Moving_Button, self.on_change_controls_button)
         self.label_chage_controls_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_chage_controls_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
 
         """self.label_speed_indicator=ttk.Label(self.main_frame)  # label edad value
         self.label_speed_indicator.place(relx=0.2,rely=0.5)
@@ -344,15 +364,17 @@ class Audiometro:
         #self.label_up_y_button.config(background = 'white', image = self.photo_up_y_button)
         self.label_up_y_button.config(background = 'red',width = 3)
         self.label_up_y_button.bind(Start_Moving_Button, self.on_label_up_y_button)
-        
-        self.label_down_y_button=ttk.Label(self.main_frame)  # label edad value
-        self.label_down_y_button.place(relx=0.37,rely=0.25)
-        #self.photo_down_y_button=PhotoImage(file = 'photos_silla/mode_1.png')
-        #self.label_down_y_button.config(background = 'white', image = self.photo_down_y_button)
-        self.label_down_y_button.config(background = 'blue', width = 3)
-        self.label_down_y_button.bind(Start_Moving_Button, self.on_label_down_y_button)
-        #self.label_down_y_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
         """
+        self.label_straight_button=ttk.Label(self.main_frame)  # label edad value
+        self.label_straight_button.place(relx=0.605,rely=0.005)
+        self.photo_straight_button_off=PhotoImage(file = 'photos_silla/front_button_off.png')
+        self.photo_straight_button_on=PhotoImage(file = 'photos_silla/front_button_on.png')
+        self.label_straight_button.config(background = 'white',image = self.photo_straight_button_off)
+        ##self.label_straight_button.config(background = 'blue', width = 5)
+        self.label_straight_button.bind(Start_Moving_Button, self.on_label_straight_button)
+        self.label_straight_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_straight_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+        
         print('wheel chair aplication running')
 
      """def on_indicador(self,event):
@@ -376,24 +398,127 @@ class Audiometro:
          self.correction_y = self.correction_y +1
          self.label_pos_init_indicator.config(text='correccion en y : '+ str(self.correction_y))
         
-     def on_label_down_y_button(self, event):
+     def on_label_straight_button(self, event):
          
-         self.correction_y = self.correction_y -1
-         self.label_pos_init_indicator.config(text='correccion en y : '+ str(self.correction_y))
+         if self.state == False:  #estado del boton on
+               return
+         
+         global is_straight_button_pressed
+         if(is_straight_button_pressed):
+             
+               is_straight_button_pressed = False
+               self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
+               self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+               self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+               self.label_indicator.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+
+               self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
+               self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+               self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+               self.main_frame.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+
+               self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
+               self.label_dial.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+               self.label_dial.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+               self.label_dial.bind('<Motion>', self.do_nothing)
+               self.label_dial.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+
+               self.photo_dial=PhotoImage(file = 'photos_silla/timon_480.png')
+               self.label_dial.create_image(200,200, image = self.photo_dial)
+               self.label_indicator.place(relx=0.719, rely= 0.415)
+         else:
+             
+               is_straight_button_pressed = True
+               
+               os.system("DISPLAY=:0 xdotool mousemove 585 210")
+               
+               self.label_straight_button.config(background = 'white',image = self.photo_straight_button_on)
+               self.label_straight_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+          
+               global first_move          
+          
+               self.global_y_pos_init=event.y_root
+               self.global_x_pos_init=event.x_root
+              
+               if(first_move == True):
+              
+                    send_uart_data(77,79,86,69)#Move
+               
+               first_move = False
+               
+               send_uart_data(1, 127, 2, 254)
+                              
+               self.label_indicator.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+               self.label_indicator.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_indicator.bind(Start_Moving_Motion, self.do_nothing)
+               self.label_indicator.bind(Start_Moving_Release, self.do_nothing)
+               self.label_indicator.bind(without_click_motion, self.on_mouse_movement_in_straight)
+
+               self.main_frame.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+               self.main_frame.bind(Start_Moving_Motion, self.do_nothing)
+               self.main_frame.bind(Start_Moving_Release, self.do_nothing)
+               self.main_frame.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.main_frame.bind(without_click_motion, self.on_mouse_movement_in_straight)
+
+               #self.label_dial.bind(Start_Moving_Button, self.do_nothing)
+               self.label_dial.bind(Start_Moving_Motion, self.do_nothing)
+               self.label_dial.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_dial.bind(Start_Moving_Release, self.do_nothing)
+               self.label_dial.bind(without_click_motion, self.on_mouse_movement_in_straight)
+               self.label_dial.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+             
     
      def on_B2_pressed_emergency(self, event):
 
+          send_uart_data(77,77,0,0)                 
           global first_move
-
+         
           first_move=True
           first_correction = True
           
+          os.system("DISPLAY=:0 xdotool mousemove 585 210")
+          self.label_straight_button.config(background = 'white',image = self.photo_straight_button_off)
+          self.label_straight_button.bind(Start_Moving_Button, self.on_label_straight_button)
+        
+##########        self.label_straight_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        
           print('emergency click ****************************')
 
           if(self.binding_state == True):
               self.label_indicator.place(relx=0.719, rely= 0.415)
+              
+          
+          self.label_indicator.bind(Start_Moving_Motion, self.do_nothing)
+          self.main_frame.bind(Start_Moving_Motion, self.do_nothing)
+          self.label_dial.bind(Start_Moving_Motion, self.do_nothing)
+          
+          global is_straight_button_pressed
+          if(is_straight_button_pressed):
+             
+               is_straight_button_pressed = False
+               self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
+               self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+               self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+               self.label_indicator.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+               self.label_indicator.bind(without_click_motion, self.do_nothing)
+               
+               self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
+               self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+               self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+               self.main_frame.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+               self.main_frame.bind(without_click_motion, self.do_nothing)
 
-          send_uart_data(77,77,0,0)
+
+               self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
+               self.label_dial.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+               self.label_dial.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+               self.label_dial.bind('<Motion>', self.do_nothing)
+               self.label_dial.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+               
+
+               self.photo_dial=PhotoImage(file = 'photos_silla/timon_480.png')
+               self.label_dial.create_image(200,200, image = self.photo_dial)
+               self.label_indicator.place(relx=0.719, rely= 0.415)
           
      def on_change_controls_button(self, event):
           
@@ -492,11 +617,13 @@ class Audiometro:
                self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
                self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
                self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+               self.label_indicator.bind(without_click_motion, self.do_nothing)
                self.label_indicator.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
 
                self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
                self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
                self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+               self.main_frame.bind(without_click_motion, self.do_nothing)
                self.main_frame.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
 
                self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
@@ -788,7 +915,7 @@ class Audiometro:
                if self.state == False:
                    
                     self.state = True
-                    speed_indicator_value=0
+                    speed_indicator_value=initspeed-1
                     self.photo_off=PhotoImage(file = 'photos_silla/'+speed_indicator_names[speed_indicator_value]) 
                     self.label_off_button.config(compound = 'center', image=self.photo_off)
 
@@ -915,6 +1042,7 @@ class Audiometro:
 
      def on_mouse_B1_pressed_init_movement(self,event):
 
+          ##print("Se ejecuto")
           if self.state == False:  #estado del boton on
                return
 
@@ -944,19 +1072,56 @@ class Audiometro:
           #self.label_indicator.place(relx=0.1022, rely=0.42)
        
 ##------------------------------------------------------------------------------------------------------------------------------revisar esto
+     def on_mouse_movement_in_straight(self,event):
+         
+         self.global_x_pos=event.x_root
+         delta_x = self.global_x_pos - self.global_x_pos_init
+         
+         if self.global_x_pos < 440:
+             os.system("DISPLAY=:0 xdotool mousemove 440 "+str(event.y_root))
+         if(abs(delta_x) > delta_x_max):
+             if(delta_x < 0):
+                 delta_x = (-1)*delta_x_max
+             else:
+                 delta_x = delta_x_max
+              
+         dx = int(70 * delta_x/delta_x_max)
+         xf = 570  + dx
+                  
+         xcoord = int(((int((int(dx)+70)*1.8214) - 127)/2)+127)
+         
+         send_uart_data(1, xcoord, 2, 254)
+          
+         self.indicator_actual_pos_x = xf/800        
+          
+         self.label_indicator.place(relx= self.indicator_actual_pos_x, rely= 0.415)
+         pass
+         
+         
      def on_mouse_movement_B3_hold(self,event):    
 
-          global first_correction,timeout_correct_dir,timer_correct_dir_event_started
+          global first_correction,timeout_correct_dir,timer_correct_dir_event_started, dont_move
+##          if dont_move == True:
+##              dont_move = False
+##              return
           
           if self.state == False:  #estado del boton on
                return
 
           #centro indicador x=0.72  y=0.42     r= 0.18 (60 pix)    rx= 0.18*0.6 (36 pix)
-
+    
+          if self.global_x_pos < 440:
+             os.system("DISPLAY=:0 xdotool mousemove 440 "+str(event.y_root))
+             
+          if(abs(self.global_y_pos- event.y_root))< y_correction_movement  and (abs(self.global_x_pos- event.x_root))< y_correction_movement:
+              return
           
           self.global_y_pos=event.y_root
-          self.global_x_pos=event.x_root
-
+          self.global_x_pos=event.x_root                  
+          
+          delta_x = 1
+          delta_y = 1
+          
           if (self.global_x_pos - self.global_x_pos_init) == 0:
                
                if (self.global_y_pos - self.global_y_pos_init) < 0:
@@ -970,80 +1135,90 @@ class Audiometro:
                
 
           else:
-               alpha = math.atan( (self.global_y_pos - self.global_y_pos_init) / (self.global_x_pos - self.global_x_pos_init) )
+               delta_y = self.global_y_pos - self.global_y_pos_init
+               delta_x = self.global_x_pos - self.global_x_pos_init
+                                    
+               alpha = math.atan( (delta_y) / (delta_x) )
+               
+               delta_x = abs(delta_x)
+               delta_y = abs(delta_y)
 
-          factor = 1 
+          if(delta_y > delta_y_max):
+              delta_y = delta_y_max
+              
+          if(delta_x > delta_x_max):
+              delta_x = delta_x_max
+          
+          factor = 1
+          
           if (self.global_x_pos - self.global_x_pos_init) < 0:
                
                factor = (-1)
 
-          dx = 70 * (math.cos(alpha))*(factor)
-          dy = 70 * (math.sin(alpha))*(factor)
-               
+          dx = 70* (delta_x/delta_x_max) * (math.cos(alpha))*(factor)
+          dy = 70* (delta_y/delta_y_max) * (math.sin(alpha))*(factor)
+          
+                        
           xf = 570  + dx
           yf = 200  + dy
 
           xcoord = int((int(dx)+70)*1.8214)
-          ycoord = int((255-(int(dy)+70)*1.8214))
-          
-          
+          if(abs(xcoord - 127) < 100):
+              xcoord = int((xcoord -127)/2)+127
               
+          ycoord = int((255-(int(dy)+70)*1.8214))
+          if(abs(ycoord - 127) < 100):
+              ycoord = int((ycoord -127)/2)+127
+          print(" xcoord ---------------------")
+          print(xcoord)
+          print(" ycoord ---------------------")
+          print(ycoord)
+          
+          """correct_optimization = False
           
           if  first_correction == True and (xcoord < xcoord_max_correction and xcoord > xcoord_min_correction):##**********************************************************************************************
               timer_correct_dir_event_started = True
               first_correction = False
               timeout_correct_dir = True
-              print(' Primera correccion **************************************************')
               
           if timeout_correct_dir == True:
-              if xcoord < xcoord_max_correction and xcoord > xcoord_min_correction:
-                  ##print('correccion xcoord -> ')
-                  ##print(xcoord)
-                  ##print(' a 128 ')
-                  
+              if xcoord < xcoord_max_correction and xcoord > xcoord_min_correction and ycoord > 127:
+                 
+                  correct_optimization = True
                   xcoord = center_of_correction
+                  
                   ##self.label_indicator.event_generate('<Motion>', warp=True, x=570, y=130)
-            
-          
+          """
+                     
           send_uart_data(1, xcoord, 2, ycoord)
           
-
           self.indicator_actual_pos_x = xf/800
           self.indicator_actual_pos_y = yf/480
           
-##          print('xcoord position x -> ')
-##          print(xcoord)
-##          print('ycoord position x -> ')
-##          print(ycoord)
-##          
-##          print('indicator position x -> ')
-##          print(self.indicator_actual_pos_x)
-##          print('indicator position y -> ')
-##          print(self.indicator_actual_pos_y)
-          
-##          if xcoord == 127 and ycoord >= 253:
-##              
-##              print('indicator position x -> *******************************************')
-##              print(self.indicator_actual_pos_x)
-##              print('indicator position x -> ')
-##              print(self.indicator_actual_pos_y)
-
           self.label_indicator.place(relx= self.indicator_actual_pos_x, rely= self.indicator_actual_pos_y)
-          
-          if timeout_correct_dir == True:
+          """
+          if correct_optimization == True:
               self.label_indicator.place(relx= 0.7136, rely= 0.2708)
+              os.system("DISPLAY=:0 xdotool mousemove 585 145")
               
+          else:   
+              self.label_indicator.place(relx= self.indicator_actual_pos_x, rely= self.indicator_actual_pos_y)
+##              os.system("DISPLAY=:0 xdotool mousemove "+str(xf+18)+" "+str(yf+18))
+##              dont_move = True
 
           #self.label_pos_movement_indicator.config(foreground = 'red', text=str(alpha)
+          """
           
           
              
      def on_mouse_movement_B3_release(self, event):
 
+          send_uart_data(77,77,0,0)
+          
           if self.state == False:  #estado del boton on
                return
           
-
+      
           global first_move, first_correction
 
           print(' Movimiento detenido **************************************************')
@@ -1051,14 +1226,15 @@ class Audiometro:
           first_move=True
           first_correction = True
 
+          
+          
           if(self.binding_state == True):
               self.label_indicator.place(relx=0.719, rely= 0.415)
-
-          
-          send_uart_data(77,77,0,0)
-          
-
-          
+              os.system("DISPLAY=:0 xdotool mousemove 585 200")
+        
+          self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+          self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+          self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
           """
           self.global_y_pos=0
           self.global_x_pos=0
@@ -1093,23 +1269,24 @@ def function_UART_Read():
                ##print('recibido: ')
                ##print(uart_counter)
                ##print(valor_recibido)
-            
+          if(valor_recibido == bytearray([160,160,160,160,111,111,111,111,111,160,160,160,160])):
+               print('valor recibido fin por error*****************************************')
+               os.system("sudo ./hub-ctrl -h 0 -P 2 -p 0") #power off USB
+               os.system("sudo ./hub-ctrl -h 0 -P 3 -p 0")
+               
+               time.sleep(0.5)
+               
+               os.system("sudo ./hub-ctrl -h 0 -P 2 -p 1")
+               os.system("sudo ./hub-ctrl -h 0 -P 3 -p 1")
+               
           if(valor_recibido == bytearray([160,160,160,160,221,221,221,221,221,160,160,160,160])):
 
                print('valor recibido fin *****************************************')
-
-               """ser.flushInput()
-               ser.flushOutput()
-               
-               ser.close()
-
-               time.sleep(0.5)
-               """
                os.system("sudo ./hub-ctrl -h 0 -P 2 -p 0") #power off USB
                os.system("sudo ./hub-ctrl -h 0 -P 3 -p 0")
-               print("Empieza")
+               
                time.sleep(0.5)
-               print("Termina")
+               
                os.system("sudo ./hub-ctrl -h 0 -P 2 -p 1")
                os.system("sudo ./hub-ctrl -h 0 -P 3 -p 1")
 
@@ -1181,7 +1358,7 @@ def function_timer_correct_dir():
     global timer_correct_dir_event_started, timeout_correct_dir, function_timer_correct_dir
     
     first_capture = True
-    print('Hilo de tiempo de correcion')
+    ##print('Hilo de tiempo de correcion')
     time_init = time.time()
     
     while running_program == True:      
@@ -1193,7 +1370,7 @@ def function_timer_correct_dir():
                 
                 time_init = time.time()
                 first_capture = False
-                print('primera captura')
+                
                 
             
             if(time.time()-time_init >= timer_delay_correct_direction):
@@ -1202,8 +1379,8 @@ def function_timer_correct_dir():
                 timer_correct_dir_event_started = False
                 
                 first_capture = True
-                print('paso el tiempo de correccion')
-                time.sleep(0.05)   
+                
+                  
     
 def main():
 
@@ -1211,26 +1388,26 @@ def main():
      thread_check_connection = threading.Thread( target = function_check_connection )
      thread_UART_Read = threading.Thread( target = function_UART_Read )
      thread_timer = threading.Thread( target = function_timer )
-     thread_timer_correct_dir = threading.Thread( target = function_timer_correct_dir )
+     ##thread_timer_correct_dir = threading.Thread( target = function_timer_correct_dir )
      
      thread_TK.daemon = True
      thread_check_connection.daemon = True
      thread_UART_Read.daemon = True
      thread_timer.daemon = True
-     thread_timer_correct_dir.daemon = True
+     ##thread_timer_correct_dir.daemon = True
      
      
      thread_TK.start()
      thread_check_connection.start()
      thread_UART_Read.start()
      thread_timer.start()
-     thread_timer_correct_dir.start()
+     ##thread_timer_correct_dir.start()
      
      thread_UART_Read.join()
      thread_check_connection.join()
      thread_TK.join()
      thread_timer.join()
-     thread_timer_correct_dir.join()
+     ##thread_timer_correct_dir.join()
      
      print('program finished')
      
