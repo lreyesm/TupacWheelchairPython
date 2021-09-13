@@ -27,6 +27,12 @@ delta_y_max = 90
 delta_x_max = 150
 
 is_straight_button_pressed = False
+is_right_button_pressed = False
+is_right_up_button_pressed = False
+is_right_down_button_pressed = False
+is_left_button_pressed = False
+is_left_up_button_pressed = False
+is_left_down_button_pressed = False
 
 ser = serial.Serial('/dev/serial0',baudrate=115200,timeout = 9,bytesize = serial.EIGHTBITS,parity = serial.PARITY_NONE,stopbits = serial.STOPBITS_ONE,rtscts=False)
 
@@ -63,7 +69,7 @@ initspeed=3
 Start_Moving_Button = '<ButtonPress-1>'
 Start_Moving_Motion ='<B1-Motion>'
 Start_Moving_Release = '<ButtonRelease-1>'
-Keep_Moving_Button = '<ButtonPress-3>'
+##Keep_Moving_Button = '<ButtonPress-3>'
 Stop_Moving_Button = '<Double-Button-3>'
 Stop_Moving_Button_emergency = '<ButtonPress-3>'
 without_click_motion = '<Motion>'
@@ -177,7 +183,7 @@ class Audiometro:
         self.main_frame.config(width = WINDOWWIDTH, height=WINDOWHEIGHT)
         #self.photo_fondo=PhotoImage(file = 'photos_silla/fondo.png') 
         #self.main_frame.config(image=self.photo_fondo)
-        self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
+##        self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
         self.main_frame.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
         self.main_frame.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
@@ -186,19 +192,19 @@ class Audiometro:
         ##self.main_frame.bind('<B3-Motion>', self.on_mouse_movement_B3_hold)
         ##self.main_frame.bind('<ButtonRelease-3>', self.on_mouse_movement_B3_release)
 
-        self.global_y_pos=0
-        self.global_y_pos_init=0
-        self.global_x_pos=0
-        self.global_x_pos_init=0
-        self.indicator_actual_pos_x=0.56
-        self.indicator_actual_pos_y=0.38
+        self.global_y_pos=200
+        self.global_y_pos_init=200
+        self.global_x_pos=575
+        self.global_x_pos_init=575
+        self.indicator_actual_pos_x=0.719
+        self.indicator_actual_pos_y=0.415
         self.state=False
         ##first_move = True**************************************************************
         self.binding_state = True
         self.actual_timon_image = 'photos_silla/timon_480.png'
         self.last_timon_image = 'photos_silla/timon_480.png'
         self.actual_timon_image_pos=0
-        self.first_x=200
+        self.first_x=575
         self.first_y=200
         self.correction_x=0
         self.correction_y=0
@@ -233,7 +239,7 @@ class Audiometro:
         self.label_off_button.bind(Start_Moving_Button, self.on_on_button)
 
         self.label_claxon_button=ttk.Label(self.main_frame)  # label edad value
-        self.label_claxon_button.place(relx=0.169,rely=0.31)
+        #self.label_claxon_button.place(relx=0.169,rely=0.31)
         self.label_claxon_button.config(foreground = 'white',background = 'white')
         self.photo_claxon=PhotoImage(file = 'photos_silla/claxon.png')  #my_icons/off.png
         self.label_claxon_button.config(compound = 'center', image=self.photo_claxon)
@@ -250,6 +256,8 @@ class Audiometro:
         self.label_logo.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
         self.label_logo.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)  
         self.label_logo.config(compound = 'center', image=self.photo_logo)
+        self.label_logo.bind(Start_Moving_Button, self.on_B2_pressed_emergency)  
+        
 
         self.label_higher_button=ttk.Label(self.main_frame)  # label edad value
         self.label_higher_button.place(relx=0.39,rely=0.525)
@@ -278,7 +286,7 @@ class Audiometro:
         self.photo_dial=PhotoImage(file = 'photos_silla/timon_480.png')  #my_icons/off.png
         #self.label_dial.config(image=self.photo_dial)
         self.label_dial.create_image(200,200, image = self.photo_dial)
-        self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
+##        self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
         self.label_dial.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
         self.label_dial.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
         self.label_dial.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
@@ -290,7 +298,7 @@ class Audiometro:
         #self.label_indicator.config(background = '#494949')
         self.photo_indice=PhotoImage(file = 'photos_silla/move.png')  #my_icons/off.png
         self.label_indicator.config(compound = 'center', image=self.photo_indice)
-        self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
+        #self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
         self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
         self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
         self.label_indicator.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
@@ -311,60 +319,8 @@ class Audiometro:
         ##self.label_chage_controls_button.bind(Keep_Moving_Button, self.on_change_controls_button)
         self.label_chage_controls_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
         self.label_chage_controls_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+        self.label_chage_controls_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)        
 
-        """self.label_speed_indicator=ttk.Label(self.main_frame)  # label edad value
-        self.label_speed_indicator.place(relx=0.2,rely=0.5)
-        self.label_speed_indicator.config(foreground = 'white')
-        self.photo_speed_indicator=PhotoImage(file = 'photos_silla/'+speed_indicator_names[1])  #my_icons/off.png
-        self.label_speed_indicator.config(compound = 'center', image=self.photo_speed_indicator)
-        #self.label_speed_indicator.bind(Start_Moving_Button, lambda e: self.on_quit(master))"""
-
-        """
-        self.label_pos_indicator=ttk.Label(self.main_frame)  # label edad value
-        self.label_pos_indicator.place(relx=0.1,rely=0.0)
-        self.label_pos_indicator.config(foreground = 'red', text='correccion en x : '+ str(self.correction_x), font=('Droid Naskh Shift Alt',16,'bold'))
-        
-        self.label_pos_init_indicator=ttk.Label(self.main_frame)  # label edad value
-        self.label_pos_init_indicator.place(relx=0.1,rely=0.1)
-        self.label_pos_init_indicator.config(foreground = 'red', text='correccion en y : '+ str(self.correction_y), font=('Droid Naskh Shift Alt',16,'bold'))
-        """
-        """self.label_pos_movement_indicator=ttk.Label(self.main_frame)  # label edad value
-        self.label_pos_movement_indicator.place(relx=0.1,rely=0.2)
-        self.label_pos_movement_indicator.config(foreground = 'red', text='movimiento '+str(math.asin(0.5)), font=('Droid Naskh Shift Alt',16,'bold'))
-        """
-        
-        """self.entry_correccion_x = ttk.Entry(self.main_frame)
-        self.entry_correccion_x.place(relx=0.05,rely=0.2)
-        #self.entry_correccion_x.pack()
-        self.entry_correccion_x.state(['!disabled'])
-        #self.entry_correccion_x.insert(0,'x')
-        
-        self.entry_correccion_y = ttk.Entry(self.main_frame)
-        self.entry_correccion_y.place(relx=0.28,rely=0.2)
-        """
-        """self.label_up_x_button=ttk.Label(self.main_frame)  # label edad value
-        self.label_up_x_button.place(relx=0.1,rely=0.25)
-        #self.photo_up_x_button=PhotoImage(file = 'photos_silla/mode_1.png')
-        #self.label_up_x_button.config(background = 'white', image = self.photo_up_x_button)
-        self.label_up_x_button.config(background = 'red',  width = 3)
-        self.label_up_x_button.bind(Start_Moving_Button, self.on_label_up_x_button)
-        #self.label_up_x_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
-        
-        self.label_down_x_button=ttk.Label(self.main_frame)  # label edad value
-        self.label_down_x_button.place(relx=0.15,rely=0.25)
-        #self.photo_down_x_button=PhotoImage(file = 'photos_silla/mode_1.png')
-        #self.label_down_x_button.config(background = 'white', image = self.photo_down_x_button)
-        self.label_down_x_button.config(background = 'blue', width = 3)
-        self.label_down_x_button.bind(Start_Moving_Button, self.on_label_down_x_button)
-        #self.label_chage_controls_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
-        
-        self.label_up_y_button=ttk.Label(self.main_frame)  # label edad value
-        self.label_up_y_button.place(relx=0.32,rely=0.25)
-        #self.photo_up_y_button=PhotoImage(file = 'photos_silla/mode_1.png')
-        #self.label_up_y_button.config(background = 'white', image = self.photo_up_y_button)
-        self.label_up_y_button.config(background = 'red',width = 3)
-        self.label_up_y_button.bind(Start_Moving_Button, self.on_label_up_y_button)
-        """
         self.label_straight_button=ttk.Label(self.main_frame)  # label edad value
         self.label_straight_button.place(relx=0.605,rely=0.005)
         self.photo_straight_button_off=PhotoImage(file = 'photos_silla/front_button_off.png')
@@ -374,6 +330,66 @@ class Audiometro:
         self.label_straight_button.bind(Start_Moving_Button, self.on_label_straight_button)
         self.label_straight_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
         self.label_straight_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+        
+        self.label_left_up_button=ttk.Label(self.main_frame)  # label edad value
+        self.label_left_up_button.place(relx=0.485,rely=0.0)
+        self.photo_left_up_button_off=PhotoImage(file = 'photos_silla/NW.png')
+        self.photo_left_up_button_on=PhotoImage(file = 'photos_silla/NW_ON.png')
+        self.label_left_up_button.config(background = 'white',image = self.photo_left_up_button_off)
+        ##self.label_straight_button.config(background = 'blue', width = 5)
+        self.label_left_up_button.bind(Start_Moving_Button, self.on_label_left_up_button)
+        self.label_left_up_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_left_up_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+        
+        self.label_left_down_button=ttk.Label(self.main_frame)  # label edad value
+        self.label_left_down_button.place(relx=0.485,rely=0.597)
+        self.photo_left_down_button_off=PhotoImage(file = 'photos_silla/SW.png')
+        self.photo_left_down_button_on=PhotoImage(file = 'photos_silla/SW_ON.png')
+        self.label_left_down_button.config(background = 'white',image = self.photo_left_down_button_off)
+        ##self.label_straight_button.config(background = 'blue', width = 5)
+        self.label_left_down_button.bind(Start_Moving_Button, self.on_label_left_down_button)
+        self.label_left_down_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_left_down_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+        
+        self.label_left_button=ttk.Label(self.main_frame)  # label edad value
+        self.label_left_button.place(relx=0.485,rely=0.365)
+        self.photo_left_button_off=PhotoImage(file = 'photos_silla/W.png')
+        self.photo_left_button_on=PhotoImage(file = 'photos_silla/West_ON.png')
+        self.label_left_button.config(background = 'white',image = self.photo_left_button_off)
+        ##self.label_straight_button.config(background = 'blue', width = 5)
+        self.label_left_button.bind(Start_Moving_Button, self.on_label_left_button)
+        self.label_left_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_left_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+        
+        self.label_right_button=ttk.Label(self.main_frame)  # label edad value
+        self.label_right_button.place(relx=0.903,rely=0.35)
+        self.photo_right_button_off=PhotoImage(file = 'photos_silla/E.png')
+        self.photo_right_button_on=PhotoImage(file = 'photos_silla/E_ON.png')
+        self.label_right_button.config(background = 'white',image = self.photo_right_button_off)
+        ##self.label_straight_button.config(background = 'blue', width = 5)
+        self.label_right_button.bind(Start_Moving_Button, self.on_label_right_button)
+        self.label_right_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_right_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+        
+        self.label_right_up_button=ttk.Label(self.main_frame)  # label edad value
+        self.label_right_up_button.place(relx=0.85, rely=0.005)
+        self.photo_right_up_button_off=PhotoImage(file = 'photos_silla/NE.png')
+        self.photo_right_up_button_on=PhotoImage(file = 'photos_silla/NE_ON.png')
+        self.label_right_up_button.config(background = 'white',image = self.photo_right_up_button_off)
+        ##self.label_straight_button.config(background = 'blue', width = 5)
+        self.label_right_up_button.bind(Start_Moving_Button, self.on_label_right_up_button)
+        self.label_right_up_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_right_up_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+        
+        self.label_right_down_button=ttk.Label(self.main_frame)  # label edad value
+        self.label_right_down_button.place(relx=0.83, rely=0.58)
+        self.photo_right_down_button_off=PhotoImage(file = 'photos_silla/SE.png')
+        self.photo_right_down_button_on=PhotoImage(file = 'photos_silla/SE_ON.png')
+        self.label_right_down_button.config(background = 'white',image = self.photo_right_down_button_off)
+        ##self.label_straight_button.config(background = 'blue', width = 5)
+        self.label_right_down_button.bind(Start_Moving_Button, self.on_label_right_down_button)
+        self.label_right_down_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
+        self.label_right_down_button.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
         
         print('wheel chair aplication running')
 
@@ -397,44 +413,123 @@ class Audiometro:
          
          self.correction_y = self.correction_y +1
          self.label_pos_init_indicator.config(text='correccion en y : '+ str(self.correction_y))
-        
-     def on_label_straight_button(self, event):
-         
+     
+     def unbind_functions_buttons_direcctions(self):
+
+         self.label_straight_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.label_right_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.label_right_up_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.label_right_down_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.label_left_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.label_left_down_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.label_left_up_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+
+         self.label_indicator.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+         self.label_indicator.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.label_indicator.bind(Start_Moving_Motion, self.do_nothing)
+         self.label_indicator.bind(Start_Moving_Release, self.on_B2_pressed_emergency)
+         self.label_indicator.bind(without_click_motion, self.do_nothing)
+
+         self.main_frame.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+         self.main_frame.bind(Start_Moving_Motion, self.do_nothing)
+         self.main_frame.bind(Start_Moving_Release, self.on_B2_pressed_emergency)
+         self.main_frame.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.main_frame.bind(without_click_motion, self.do_nothing)
+
+         # self.label_dial.bind(Start_Moving_Button, self.do_nothing)
+         self.label_dial.bind(Start_Moving_Motion, self.do_nothing)
+         self.label_dial.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+         self.label_dial.bind(Start_Moving_Release, self.on_B2_pressed_emergency)
+         self.label_dial.bind(without_click_motion, self.do_nothing)
+         self.label_dial.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+
+     def bind_functions_buttons_direcctions(self):
+
+         self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+         self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+         self.label_indicator.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+
+         # self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
+         self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+         self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+         self.main_frame.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+
+         # self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
+         self.label_dial.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
+         self.label_dial.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
+         self.label_dial.bind('<Motion>', self.do_nothing)
+         self.label_dial.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
+
+         self.photo_dial = PhotoImage(file='photos_silla/timon_480.png')
+         self.label_dial.create_image(200, 200, image=self.photo_dial)
+
+         self.label_indicator.place(relx=0.719, rely=0.415)
+
+     
+     def on_label_left_up_button(self, event):
          if self.state == False:  #estado del boton on
                return
-         
-         global is_straight_button_pressed
-         if(is_straight_button_pressed):
+            
+         global is_left_up_button_pressed
+         if(is_left_up_button_pressed):
              
-               is_straight_button_pressed = False
-               self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
-               self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
-               self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
-               self.label_indicator.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
-
-               self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
-               self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
-               self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
-               self.main_frame.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
-
-               self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
-               self.label_dial.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
-               self.label_dial.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
-               self.label_dial.bind('<Motion>', self.do_nothing)
-               self.label_dial.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
-
-               self.photo_dial=PhotoImage(file = 'photos_silla/timon_480.png')
-               self.label_dial.create_image(200,200, image = self.photo_dial)
-               self.label_indicator.place(relx=0.719, rely= 0.415)
+               is_left_up_button_pressed = False
+               
+               self.bind_functions_buttons_direcctions()
          else:
              
-               is_straight_button_pressed = True
+               is_left_up_button_pressed = True
                
                os.system("DISPLAY=:0 xdotool mousemove 585 210")
                
-               self.label_straight_button.config(background = 'white',image = self.photo_straight_button_on)
-               self.label_straight_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_left_up_button.config(background = 'white',image = self.photo_left_up_button_on)
+               self.label_left_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_left_button.bind(without_click_motion, self.do_nothing)
+               
+               
+               self.unbind_functions_buttons_direcctions()
+               
+               global first_move          
           
+               self.global_y_pos_init=event.y_root
+               self.global_x_pos_init=event.x_root
+              
+               if(first_move == True):
+              
+                    send_uart_data(77,79,86,69)#Move
+               
+               first_move = False
+               print("Left up")
+               
+               send_uart_data(1, 0, 2, 255)
+                
+                      
+               
+               
+               
+     def on_label_left_down_button(self, event):
+         if self.state == False:  #estado del boton on
+               return
+            
+         global is_left_down_button_pressed
+         if(is_left_down_button_pressed):
+             
+               is_left_down_button_pressed = False
+               
+               self.bind_functions_buttons_direcctions()
+         else:
+             
+               is_left_down_button_pressed = True
+               
+               os.system("DISPLAY=:0 xdotool mousemove 585 210")
+               
+               self.label_left_down_button.config(background = 'white',image = self.photo_left_down_button_on)
+               self.label_left_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_left_button.bind(without_click_motion, self.do_nothing)
+               
+               
+               self.unbind_functions_buttons_direcctions()
+               
                global first_move          
           
                self.global_y_pos_init=event.y_root
@@ -446,31 +541,222 @@ class Audiometro:
                
                first_move = False
                
-               send_uart_data(1, 127, 2, 254)
-                              
-               self.label_indicator.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
-               self.label_indicator.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
-               self.label_indicator.bind(Start_Moving_Motion, self.do_nothing)
-               self.label_indicator.bind(Start_Moving_Release, self.do_nothing)
-               self.label_indicator.bind(without_click_motion, self.on_mouse_movement_in_straight)
-
-               self.main_frame.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
-               self.main_frame.bind(Start_Moving_Motion, self.do_nothing)
-               self.main_frame.bind(Start_Moving_Release, self.do_nothing)
-               self.main_frame.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
-               self.main_frame.bind(without_click_motion, self.on_mouse_movement_in_straight)
-
-               #self.label_dial.bind(Start_Moving_Button, self.do_nothing)
-               self.label_dial.bind(Start_Moving_Motion, self.do_nothing)
-               self.label_dial.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
-               self.label_dial.bind(Start_Moving_Release, self.do_nothing)
+               send_uart_data(1, 0, 2, 0)
+                
+                      
+               
+               
+     def on_label_left_button(self, event):
+         if self.state == False:  #estado del boton on
+               return
+            
+         global is_left_button_pressed
+         if(is_left_button_pressed):
+             
+               is_left_button_pressed = False
+               
+               self.bind_functions_buttons_direcctions()
+         else:
+             
+               is_left_button_pressed = True
+               
+               os.system("DISPLAY=:0 xdotool mousemove 585 210")
+               
+               self.label_left_button.config(background = 'white',image = self.photo_left_button_on)
+               self.label_left_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_left_button.bind(without_click_motion, self.do_nothing)
+               
+               self.unbind_functions_buttons_direcctions()
+               
+               global first_move          
+          
+               self.global_y_pos_init=event.y_root
+               self.global_x_pos_init=event.x_root
+              
+               if(first_move == True):
+              
+                    send_uart_data(77,79,86,69)#Move
+               
+               first_move = False
+               
+               send_uart_data(1, 0, 2, 127)
+                
+                           
+               
+     def on_label_right_up_button(self, event):
+         if self.state == False:  #estado del boton on
+               return
+            
+         global is_right_up_button_pressed
+         if(is_right_up_button_pressed):
+             
+               is_right_up_button_pressed = False
+               
+               self.bind_functions_buttons_direcctions()
+         else:
+             
+               is_right_up_button_pressed = True
+               
+               os.system("DISPLAY=:0 xdotool mousemove 585 210")
+               
+               self.label_right_up_button.config(background = 'white',image = self.photo_right_up_button_on)
+               self.label_right_up_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_right_up_button.bind(without_click_motion, self.do_nothing)
+               
+               
+               self.unbind_functions_buttons_direcctions()
+               
+               global first_move          
+          
+               self.global_y_pos_init=event.y_root
+               self.global_x_pos_init=event.x_root
+              
+               if(first_move == True):
+              
+                    send_uart_data(77,79,86,69)#Move
+               
+               first_move = False
+               
+               send_uart_data(1, 200, 2, 200)     
+     
+     def on_label_right_down_button(self, event):
+         if self.state == False:  #estado del boton on
+               return
+            
+         global is_right_down_button_pressed
+         if(is_right_down_button_pressed):
+             
+               is_right_down_button_pressed = False
+               
+               self.bind_functions_buttons_direcctions()
+         else:
+             
+               is_right_down_button_pressed = True
+               
+               os.system("DISPLAY=:0 xdotool mousemove 585 210")
+               
+               self.label_right_down_button.config(background = 'white',image = self.photo_right_down_button_on)
+               self.label_right_down_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_right_down_button.bind(without_click_motion, self.do_nothing)
+               
+               
+               self.unbind_functions_buttons_direcctions()
+               
+               global first_move          
+          
+               self.global_y_pos_init=event.y_root
+               self.global_x_pos_init=event.x_root
+              
+               if(first_move == True):
+              
+                    send_uart_data(77,79,86,69)#Move
+               
+               first_move = False
+               
+               send_uart_data(1, 254, 2, 0)
+               
+     def on_label_right_button(self, event):
+         if self.state == False:  #estado del boton on
+               return
+            
+         global is_right_button_pressed
+         if(is_right_button_pressed):
+             
+               is_right_button_pressed = False
+               
+               self.bind_functions_buttons_direcctions()
+         else:
+             
+               is_right_button_pressed = True
+               
+               os.system("DISPLAY=:0 xdotool mousemove 585 210")
+               
+               self.label_right_button.config(background = 'white',image = self.photo_right_button_on)
+               self.label_right_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
+               self.label_right_button.bind(without_click_motion, self.do_nothing)
+               
+               
+               self.unbind_functions_buttons_direcctions()
+               
+               global first_move          
+          
+               self.global_y_pos_init=event.y_root
+               self.global_x_pos_init=event.x_root
+              
+               if(first_move == True):
+              
+                    send_uart_data(77,79,86,69)#Move
+               
+               first_move = False
+               
+               send_uart_data(1, 254, 2, 127)
+                
+                      
+        
+             
+     
+    
+      
+     
+     def on_label_straight_button(self, event):
+         
+         if self.state == False:  #estado del boton on
+               return
+         
+         global is_straight_button_pressed
+         if(is_straight_button_pressed):
+             
+               is_straight_button_pressed = False
+                     
+               #self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
+               
+               self.bind_functions_buttons_direcctions()
+         else:
+             
+               is_straight_button_pressed = True
+               
+               os.system("DISPLAY=:0 xdotool mousemove 590 210")
+               
+               self.unbind_functions_buttons_direcctions()
+               
+               self.label_straight_button.config(background = 'white',image = self.photo_straight_button_on)
+               self.label_straight_button.bind(Start_Moving_Button, self.on_B2_pressed_emergency)
                self.label_dial.bind(without_click_motion, self.on_mouse_movement_in_straight)
-               self.label_dial.bind(Stop_Moving_Button_emergency, self.on_B2_pressed_emergency)
+               self.label_indicator.bind(without_click_motion, self.on_mouse_movement_in_straight)
+               self.label_left_button.bind(without_click_motion, self.on_mouse_movement_in_straight)
+               self.label_left_up_button.bind(without_click_motion, self.on_mouse_movement_in_straight)
+               self.label_left_down_button.bind(without_click_motion, self.on_mouse_movement_in_straight)
+               self.label_right_button.bind(without_click_motion, self.on_mouse_movement_in_straight)
+               self.label_right_up_button.bind(without_click_motion, self.on_mouse_movement_in_straight)
+               self.label_right_down_button.bind(without_click_motion, self.on_mouse_movement_in_straight) 
+               
+               global first_move          
+          
+               self.global_y_pos_init=event.y_root
+               self.global_x_pos_init=event.x_root
+              
+               if(first_move == True):
+              
+                    send_uart_data(77,79,86,69)#Move
+               
+               first_move = False
+               
+               send_uart_data(1, 128, 2, 254)
+                
+                      
+               
              
     
      def on_B2_pressed_emergency(self, event):
 
-          send_uart_data(77,77,0,0)                 
+          send_uart_data(77,77,0,0)
+          self.label_straight_button.bind(without_click_motion, self.do_nothing)
+          self.label_right_button.bind(without_click_motion, self.do_nothing)
+          self.label_right_up_button.bind(without_click_motion, self.do_nothing)
+          self.label_right_down_button.bind(without_click_motion, self.do_nothing)
+          self.label_left_button.bind(without_click_motion, self.do_nothing)
+          self.label_left_up_button.bind(without_click_motion, self.do_nothing)
+          self.label_left_down_button.bind(without_click_motion, self.do_nothing)
           global first_move
          
           first_move=True
@@ -479,7 +765,19 @@ class Audiometro:
           os.system("DISPLAY=:0 xdotool mousemove 585 210")
           self.label_straight_button.config(background = 'white',image = self.photo_straight_button_off)
           self.label_straight_button.bind(Start_Moving_Button, self.on_label_straight_button)
-        
+          self.label_right_button.config(background = 'white',image = self.photo_right_button_off)
+          self.label_right_button.bind(Start_Moving_Button, self.on_label_right_button)
+          self.label_right_up_button.config(background = 'white',image = self.photo_right_up_button_off)
+          self.label_right_up_button.bind(Start_Moving_Button, self.on_label_right_up_button)
+          self.label_right_down_button.config(background = 'white',image = self.photo_right_down_button_off)
+          self.label_right_down_button.bind(Start_Moving_Button, self.on_label_right_down_button)
+          self.label_left_button.config(background = 'white',image = self.photo_left_button_off)
+          self.label_left_button.bind(Start_Moving_Button, self.on_label_left_button)
+          self.label_left_up_button.config(background = 'white',image = self.photo_left_up_button_off)
+          self.label_left_up_button.bind(Start_Moving_Button, self.on_label_left_up_button)
+          self.label_left_down_button.config(background = 'white',image = self.photo_left_down_button_off)
+          self.label_left_down_button.bind(Start_Moving_Button, self.on_label_left_down_button)
+         
 ##########        self.label_straight_button.bind(Stop_Moving_Button, self.on_B2_pressed_emergency)
         
           print('emergency click ****************************')
@@ -492,24 +790,31 @@ class Audiometro:
           self.main_frame.bind(Start_Moving_Motion, self.do_nothing)
           self.label_dial.bind(Start_Moving_Motion, self.do_nothing)
           
-          global is_straight_button_pressed
-          if(is_straight_button_pressed):
+          global is_straight_button_pressed, is_right_button_pressed , is_left_button_pressed, is_left_down_button_pressed, is_left_up_button_pressed, is_right_down_button_pressed, is_right_up_button_pressed
+          if(is_straight_button_pressed or is_right_button_pressed or is_left_button_pressed or is_left_down_button_pressed
+             or is_left_up_button_pressed or is_right_down_button_pressed or is_right_up_button_pressed):
              
                is_straight_button_pressed = False
-               self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
+               is_right_button_pressed = False
+               is_right_up_button_pressed = False
+               is_right_down_button_pressed = False
+               is_left_button_pressed = False
+               is_left_up_button_pressed = False
+               is_left_down_button_pressed = False
+               #self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
                self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
                self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
                self.label_indicator.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
                self.label_indicator.bind(without_click_motion, self.do_nothing)
                
-               self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
+               #self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
                self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
                self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
                self.main_frame.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
                self.main_frame.bind(without_click_motion, self.do_nothing)
 
 
-               self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
+               #self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
                self.label_dial.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
                self.label_dial.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
                self.label_dial.bind('<Motion>', self.do_nothing)
@@ -614,19 +919,19 @@ class Audiometro:
 
           if(self.binding_state == True): #true es el estado inicial
                
-               self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
+               #self.label_indicator.bind(Keep_Moving_Button, self.on_timon_pressed)
                self.label_indicator.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
                self.label_indicator.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
                self.label_indicator.bind(without_click_motion, self.do_nothing)
                self.label_indicator.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
 
-               self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
+               #self.main_frame.bind(Keep_Moving_Button, self.on_timon_pressed)
                self.main_frame.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
                self.main_frame.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
                self.main_frame.bind(without_click_motion, self.do_nothing)
                self.main_frame.bind(Start_Moving_Release, self.on_mouse_movement_B3_release)
 
-               self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
+               #self.label_dial.bind(Keep_Moving_Button, self.on_timon_pressed)
                self.label_dial.bind(Start_Moving_Button, self.on_mouse_B1_pressed_init_movement)
                self.label_dial.bind(Start_Moving_Motion, self.on_mouse_movement_B3_hold)
                self.label_dial.bind('<Motion>', self.do_nothing)
@@ -860,6 +1165,8 @@ class Audiometro:
 
           global timer_event_started, timeout#, valor_recibido
           
+          self.setEmergency_event()
+          
           if (timeout == False):
               return
           else:
@@ -878,15 +1185,35 @@ class Audiometro:
 
           self.label_led_button.place(relx=0.85, rely = 0.9)
          
+     def setEmergency_event(self):
+         
+          if(is_straight_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_up_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_down_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_up_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_down_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+              
      def on_on_button(self,event):
 
           global speed_indicator_value, timer_event_started, timeout#, valor_recibido
+          
+          self.setEmergency_event()
           
           if timeout == False:
               return
           else:
               timeout = False
             
+        
           
           timer_event_started = True 
           
@@ -929,6 +1256,21 @@ class Audiometro:
 
           global speed_indicator_value, timer_event_started, timeout#, valor_recibido
           
+          if(is_straight_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_up_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_down_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_up_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_down_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')  
+              
           if timeout == False:
               return
           else:
@@ -987,6 +1329,21 @@ class Audiometro:
          
           global speed_indicator_value, timer_event_started, timeout#, valor_recibido
           
+          if(is_straight_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_up_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_left_down_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_up_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')
+          if(is_right_down_button_pressed == True):
+              self.on_B2_pressed_emergency('<ButtonPress-3>')     
+              
           if timeout == False:
               return
           else:
@@ -1075,10 +1432,20 @@ class Audiometro:
      def on_mouse_movement_in_straight(self,event):
          
          self.global_x_pos=event.x_root
+         self.global_y_pos=event.y_root
+         
          delta_x = self.global_x_pos - self.global_x_pos_init
          
-         if self.global_x_pos < 440:
-             os.system("DISPLAY=:0 xdotool mousemove 440 "+str(event.y_root))
+         if self.global_x_pos < 410:
+             os.system("DISPLAY=:0 xdotool mousemove 410 "+str(event.y_root))
+         if self.global_x_pos > 780:
+             os.system("DISPLAY=:0 xdotool mousemove 780 "+str(event.y_root))
+             
+         if self.global_y_pos < 30:
+             os.system("DISPLAY=:0 xdotool mousemove "+str(event.x_root)+" 30")
+         if self.global_y_pos > 400:
+             os.system("DISPLAY=:0 xdotool mousemove "+str(event.x_root)+" 400")
+             
          if(abs(delta_x) > delta_x_max):
              if(delta_x < 0):
                  delta_x = (-1)*delta_x_max
